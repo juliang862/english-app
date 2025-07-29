@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>해리포터 영어 학습 & 퀴즈</title>
+    
+    <!-- PWA 설정 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffd700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="해리포터 영어">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c1810 0%, #8b4513 50%, #daa520 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+            touch-action: manipulation;
+            /* PWA에서 풀스크린 대응 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .header {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            background: rgba(44, 24, 16, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: #e6e6e6;
+        }
+
+        /* 설치 버튼 스타일 */
+        .install-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .install-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .install-btn.hidden {
+            display: none;
+        }
+
+        .mode-indicator {
+            background: linear-gradient(45deg, #dc143c, #ff6347);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .progress {
+            background: rgba(255,215,0,0.2);
+            border-radius: 15px;
+            padding: 3px;
+            margin-bottom: 15px;
+            border: 2px solid #daa520;
+            height: 30px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #8b0000, #dc143c);
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        /* 학습 모드 카드 */
+        .study-card {
+            background: linear-gradient(145deg, #f8f4e6, #fff8dc);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            padding: 25px 15px;
+            margin: 15px 0;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #daa520;
+            position: relative;
+        }
+
+        .study-card:active {
+            transform: scale(0.98);
+        }
+
+        .study-card.flipped {
+            background: linear-gradient(145deg, #e6f3ff, #f0f8ff);
+        }
+
+        .card-content {
+            transition: opacity 0.2s ease;
+        }
+
+        .word {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #8b0000;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .pronunciation {
+            font-size: 1.1em;
+            color: #4b0082;
+            margin-bottom: 15px;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .meaning {
+            font-size: 1.3em;
+            color: #2c1810;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .example {
+            font-size: 1em;
+            color: #4b0082;
+            font-style: italic;
+            background: linear-gradient(145deg, #fff8dc, #f5f5dc);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #daa520;
+            margin-bottom: 10px;
+        }
+
+        .chapter-info {
+            font-size: 0.8em;
+            color: #8b4513;
+            padding: 5px 12px;
+            background: rgba(255,215,0,0.2);
+            border-radius: 15px;
+            display: inline-block;
+            border: 1px solid #daa520;
+        }
+
+        .pronounce-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+            width: 100%;
+        }
+
+        .pronounce-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 퀴즈 모드 */
+        .quiz-card {
+            background: linear-gradient(145deg, #e6f3ff, #f0f8ff);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            padding: 25px 15px;
+            margin: 15px 0;
+            min-height: 400px;
+            border: 3px solid #4169e1;
+        }
+
+        .quiz-question {
+            font-size: 1.4em;
+            color: #2c1810;
+            margin-bottom: 20px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .quiz-word {
+            font-size: 2.2em;
+            color: #8b0000;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .quiz-option {
+            background: linear-gradient(145deg, #ffffff, #f8f8f8);
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .quiz-option:active {
+            transform: scale(0.98);
+        }
+
+        .quiz-option.correct {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            color: white;
+            border-color: #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .quiz-option.wrong {
+            background: linear-gradient(45deg, #f44336, #e57373);
+            color: white;
+            border-color: #f44336;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .quiz-option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .quiz-feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .feedback-correct {
+            background: linear-gradient(145deg, #e8f5e8, #f1f8e9);
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+        }
+
+        .feedback-wrong {
+            background: linear-gradient(145deg, #ffebee, #fce4ec);
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #228b22, #32cd32);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #4169e1, #6495ed);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc143c, #ff6347);
+            color: white;
+        }
+
+        .btn-quiz {
+            background: linear-gradient(45deg, #9c27b0, #ba68c8);
+            color: white;
+            font-size: 1.2em;
+            padding: 18px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            background: rgba(255,215,0,0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 2px solid #daa520;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: block;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #e6e6e6;
+        }
+
+        .final-score {
+            background: linear-gradient(145deg, #ffd700, #ffed4e);
+            color: #2c1810;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 3px solid #daa520;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .final-score h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            color: #8b4513;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .quiz-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .magic-sparkle {
+            position: fixed;
+            color: #ffd700;
+            font-size: 1.5em;
+            animation: sparkle 2s infinite;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            z-index: 1000;
+            animation: celebrate 1s ease-out;
+        }
+
+        @keyframes celebrate {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- PWA 설치 버튼 -->
+    <button id="installBtn" class="install-btn hidden" title="앱 설치하기">📱</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>⚡ 해리포터 영어 마스터 🪄</h1>
+            <p class="subtitle">마법사의 돌과 함께 영어 정복하기</p>
+            <div class="mode-indicator" id="modeIndicator">📚 학습 모드</div>
+        </div>
+
+        <!-- 학습 모드 -->
+        <div id="studyMode">
+            <div class="progress">
+                <div class="progress-bar" id="studyProgressBar">1/25</div>
+            </div>
+
+            <div class="study-card" id="studyCard" onclick="flipStudyCard()">
+                <div class="card-content" id="studyCardContent">
+                    <!-- 내용이 JavaScript로 채워짐 -->
+                </div>
+                <div class="flip-hint">터치해서 뒤집기 ⚡</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn pronounce-btn" onclick="event.stopPropagation(); pronounceWord()">🔊 발음 듣기</button>
+                <button class="btn btn-secondary" onclick="nextStudyCard()">다음 단어 →</button>
+                <button class="btn btn-quiz" onclick="startQuiz()" id="startQuizBtn" style="display: none;">🎯 퀴즈 시작하기!</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="currentStudyCard">1</span>
+                    <span class="stat-label">현재</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="studiedCount">0</span>
+                    <span class="stat-label">학습완료</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalStudyCards">25</span>
+                    <span class="stat-label">전체</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퀴즈 모드 -->
+        <div id="quizMode" class="hidden">
+            <div class="progress">
+                <div class="progress-bar" id="quizProgressBar">1/25</div>
+            </div>
+
+            <div class="quiz-card" id="quizCard">
+                <div class="quiz-progress">
+                    <span>문제 <span id="currentQuizNumber">1</span>/25</span>
+                    <span>정답률: <span id="accuracy">0</span>%</span>
+                </div>
+                
+                <div class="quiz-question" id="quizQuestion">
+                    <!-- 퀴즈 질문이 여기에 들어감 -->
+                </div>
+
+                <div class="quiz-options" id="quizOptions">
+                    <!-- 선택지들이 여기에 들어감 -->
+                </div>
+
+                <div class="quiz-feedback hidden" id="quizFeedback">
+                    <!-- 피드백이 여기에 들어감 -->
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="nextQuizQuestion()" id="nextQuizBtn" style="display: none;">다음 문제 →</button>
+                <button class="btn btn-primary" onclick="restartQuiz()">퀴즈 다시하기</button>
+                <button class="btn btn-danger" onclick="backToStudy()">학습 모드로 돌아가기</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="correctCount">0</span>
+                    <span class="stat-label">정답</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="wrongCount">0</span>
+                    <span class="stat-label">오답</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="quizScore">0</span>
+                    <span class="stat-label">점수</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최종 결과 -->
+        <div id="finalResult" class="hidden">
+            <div class="final-score">
+                <h2>🎉 퀴즈 완료!</h2>
+                <p id="finalScoreText"></p>
+                <p id="finalMessage"></p>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-quiz" onclick="restartQuiz()">다시 도전하기</button>
+                <button class="btn btn-secondary" onclick="backToStudy()">학습 모드로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const flashcards = [
+            {
+                word: "cupboard", pronunciation: "/ˈkʌbərd/", meaning: "찬장, 벽장",
+                example: "Harry lived in a cupboard under the stairs.", chapter: "1장 - 살아남은 아이"
+            },
+            {
+                word: "ordinary", pronunciation: "/ˈɔːrdəneri/", meaning: "평범한, 보통의",
+                example: "The Dursleys were proud of being perfectly ordinary.", chapter: "1장 - 살아남은 아이"
+            },
+            {
+                word: "tremendous", pronunciation: "/trɪˈmendəs/", meaning: "엄청난, 굉장한",
+                example: "There was a tremendous roar from the crowd.", chapter: "1장 - 살아남은 아이"
+            },
+            {
+                word: "peculiar", pronunciation: "/pɪˈkjuːljər/", meaning: "이상한, 특이한",
+                example: "Professor McGonagall looked rather peculiar.", chapter: "1장 - 살아남은 아이"
+            },
+            {
+                word: "bewildered", pronunciation: "/bɪˈwɪldərd/", meaning: "당황한, 어리둥절한",
+                example: "Harry looked bewildered at all the attention.", chapter: "2장 - 사라진 유리"
+            },
+            {
+                word: "enormous", pronunciation: "/ɪˈnɔːrməs/", meaning: "거대한, 막대한",
+                example: "Hagrid had enormous hands and feet.", chapter: "4장 - 열쇠지기"
+            },
+            {
+                word: "magnificent", pronunciation: "/mæɡˈnɪfɪsənt/", meaning: "장엄한, 훌륭한",
+                example: "Hogwarts was a magnificent castle.", chapter: "5장 - 대각선 골목"
+            },
+            {
+                word: "fascinating", pronunciation: "/ˈfæsɪneɪtɪŋ/", meaning: "매혹적인, 흥미진진한",
+                example: "The magical world was fascinating to Harry.", chapter: "5장 - 대각선 골목"
+            },
+            {
+                word: "terrified", pronunciation: "/ˈterɪfaɪd/", meaning: "무서워하는, 겁에 질린",
+                example: "Neville was terrified of Professor Snape.", chapter: "8장 - 포션 마스터"
+            },
+            {
+                word: "brilliant", pronunciation: "/ˈbrɪljənt/", meaning: "뛰어난, 훌륭한",
+                example: "Hermione was brilliant at every subject.", chapter: "9장 - 한밤중의 결투"
+            },
+            {
+                word: "mysterious", pronunciation: "/mɪˈstɪriəs/", meaning: "신비로운, 수상한",
+                example: "There was something mysterious about the third floor.", chapter: "9장 - 한밤중의 결투"
+            },
+            {
+                word: "furious", pronunciation: "/ˈfjʊriəs/", meaning: "분노한, 격노한",
+                example: "Professor McGonagall was furious with them.", chapter: "9장 - 한밤중의 결투"
+            },
+            {
+                word: "desperate", pronunciation: "/ˈdespərət/", meaning: "절망적인, 필사적인",
+                example: "Harry made a desperate grab for his wand.", chapter: "10장 - 할로윈"
+            },
+            {
+                word: "suspicious", pronunciation: "/səˈspɪʃəs/", meaning: "의심스러운, 수상한",
+                example: "Snape's behavior seemed very suspicious.", chapter: "11장 - 퀴디치"
+            },
+            {
+                word: "determined", pronunciation: "/dɪˈtɜːrmɪnd/", meaning: "결심한, 단호한",
+                example: "Harry was determined to win the Quidditch match.", chapter: "11장 - 퀴디치"
+            },
+            {
+                word: "invisible", pronunciation: "/ɪnˈvɪzəbəl/", meaning: "보이지 않는, 투명한",
+                example: "Harry put on the invisibility cloak.", chapter: "12장 - 에리셀의 거울"
+            },
+            {
+                word: "anxious", pronunciation: "/ˈæŋkʃəs/", meaning: "걱정하는, 불안한",
+                example: "Harry felt anxious about the exams.", chapter: "14장 - 노버트"
+            },
+            {
+                word: "forbidden", pronunciation: "/fərˈbɪdən/", meaning: "금지된, 허용되지 않은",
+                example: "They entered the Forbidden Forest.", chapter: "15장 - 금지된 숲"
+            },
+            {
+                word: "horrified", pronunciation: "/ˈhɔːrɪfaɪd/", meaning: "끔찍해하는, 공포에 질린",
+                example: "Harry was horrified by what he saw.", chapter: "15장 - 금지된 숲"
+            },
+            {
+                word: "dangerous", pronunciation: "/ˈdeɪndʒərəs/", meaning: "위험한",
+                example: "The three-headed dog was extremely dangerous.", chapter: "16장 - 함정문을 통과하여"
+            },
+            {
+                word: "courage", pronunciation: "/ˈkɜːrɪdʒ/", meaning: "용기, 용감함",
+                example: "It takes courage to stand up to enemies.", chapter: "16장 - 함정문을 통과하여"
+            },
+            {
+                word: "protection", pronunciation: "/prəˈtekʃən/", meaning: "보호, 보호막",
+                example: "His mother's love gave Harry protection.", chapter: "17장 - 두 얼굴을 가진 남자"
+            },
+            {
+                word: "triumph", pronunciation: "/ˈtraɪʌmf/", meaning: "승리, 성공",
+                example: "Harry's triumph over Voldemort was celebrated.", chapter: "17장 - 두 얼굴을 가진 남자"
+            },
+            {
+                word: "adventure", pronunciation: "/ədˈventʃər/", meaning: "모험, 모험담",
+                example: "Harry's first year was full of adventure.", chapter: "17장 - 두 얼굴을 가진 남자"
+            },
+            {
+                word: "magical", pronunciation: "/ˈmædʒɪkəl/", meaning: "마법의, 신비로운",
+                example: "The magical world was beyond Harry's imagination.", chapter: "전체"
+            }
+        ];
+
+        // PWA 관련 변수들
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        // 상태 변수들
+        let currentMode = 'study'; // 'study' 또는 'quiz'
+        let currentStudyIndex = 0;
+        let isStudyFlipped = false;
+        let studiedCards = 0;
+        let allStudied = false;
+
+        // 퀴즈 관련 변수들
+        let currentQuizIndex = 0;
+        let quizQuestions = [];
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let isQuizAnswered = false;
+
+        // PWA 설치 관련 이벤트 리스너
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('앱이 설치되었습니다');
+                }
+                deferredPrompt = null;
+                installBtn.classList.add('hidden');
+            }
+        });
+
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker 등록 성공:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker 등록 실패:', error);
+                    });
+            });
+        }
+
+        // 학습 모드 함수들
+        function displayStudyCard() {
+            const card = flashcards[currentStudyIndex];
+            const cardContent = document.getElementById('studyCardContent');
+            
+            if (!isStudyFlipped) {
+                cardContent.innerHTML = `
+                    <div class="word">${card.word}</div>
+                    <div class="pronunciation">${card.pronunciation}</div>
+                `;
+            } else {
+                cardContent.innerHTML = `
+                    <div class="meaning">${card.meaning}</div>
+                    <div class="example">"${card.example}"</div>
+                    <div class="chapter-info">📖 ${card.chapter}</div>
+                `;
+            }
+            
+            updateStudyProgress();
+        }
+
+        function flipStudyCard() {
+            const studyCard = document.getElementById('studyCard');
+            const cardContent = document.getElementById('studyCardContent');
+            
+            createSparkles();
+            cardContent.style.opacity = '0';
+            
+            setTimeout(() => {
+                isStudyFlipped = !isStudyFlipped;
+                studyCard.classList.toggle('flipped', isStudyFlipped);
+                displayStudyCard();
+                cardContent.style.opacity = '1';
+            }, 200);
+        }
+
+        function nextStudyCard() {
+            if (!isStudyFlipped) {
+                studiedCards++;
+            }
+            
+            if (currentStudyIndex < flashcards.length - 1) {
+                currentStudyIndex++;
+                isStudyFlipped = false;
+                document.getElementById('studyCard').classList.remove('flipped');
+                displayStudyCard();
+            } else {
+                // 모든 카드 학습 완료
+                allStudied = true;
+                document.getElementById('startQuizBtn').style.display = 'block';
+                createCelebration('🎉');
+                
+                setTimeout(() => {
+                    alert('⚡ 모든 단어 학습 완료! 이제 퀴즈에 도전해보세요! 🪄');
+                }, 500);
+            }
+        }
+
+        function updateStudyProgress() {
+            const progress = ((currentStudyIndex + 1) / flashcards.length) * 100;
+            const progressBar = document.getElementById('studyProgressBar');
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = `${currentStudyIndex + 1}/${flashcards.length}`;
+            
+            document.getElementById('currentStudyCard').textContent = currentStudyIndex + 1;
+            document.getElementById('studiedCount').textContent = studiedCards;
+        }
+
+        // 퀴즈 모드 함수들
+        function startQuiz() {
+            if (!allStudied) {
+                alert('먼저 모든 단어를 학습해주세요!');
+                return;
+            }
+            
+            currentMode = 'quiz';
+            document.getElementById('studyMode').classList.add('hidden');
+            document.getElementById('quizMode').classList.remove('hidden');
+            document.getElementById('finalResult').classList.add('hidden');
+            document.getElementById('modeIndicator').textContent = '🎯 퀴즈 모드';
+            
+            generateQuizQuestions();
+            currentQuizIndex = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            
+            displayQuizQuestion();
+        }
+
+        function generateQuizQuestions() {
+            quizQuestions = [];
+            
+            flashcards.forEach((card, index) => {
+                // 뜻 맞추기 문제
+                const meaningQuestion = {
+                    type: 'meaning',
+                    word: card.word,
+                    correct: card.meaning,
+                    question: `다음 단어의 뜻은?`,
+                    options: generateMeaningOptions(card.meaning, index)
+                };
+                
+                // 단어 맞추기 문제
+                const wordQuestion = {
+                    type: 'word',
+                    meaning: card.meaning,
+                    correct: card.word,
+                    question: `다음 뜻에 해당하는 영어 단어는?`,
+                    options: generateWordOptions(card.word, index)
+                };
+                
+                quizQuestions.push(Math.random() > 0.5 ? meaningQuestion : wordQuestion);
+            });
+            
+            // 배열 섞기
+            quizQuestions = shuffleArray(quizQuestions);
+        }
+
+        function generateMeaningOptions(correctMeaning, correctIndex) {
+            const options = [correctMeaning];
+            const usedIndexes = [correctIndex];
+            
+            while (options.length < 4) {
+                const randomIndex = Math.floor(Math.random() * flashcards.length);
+                if (!usedIndexes.includes(randomIndex)) {
+                    options.push(flashcards[randomIndex].meaning);
+                    usedIndexes.push(randomIndex);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+
+        function generateWordOptions(correctWord, correctIndex) {
+            const options = [correctWord];
+            const usedIndexes = [correctIndex];
+            
+            while (options.length < 4) {
+                const randomIndex = Math.floor(Math.random() * flashcards.length);
+                if (!usedIndexes.includes(randomIndex)) {
+                    options.push(flashcards[randomIndex].word);
+                    usedIndexes.push(randomIndex);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                showFinalResult();
+                return;
+            }
+
+            const question = quizQuestions[currentQuizIndex];
+            const questionElement = document.getElementById('quizQuestion');
+            const optionsElement = document.getElementById('quizOptions');
+            const feedbackElement = document.getElementById('quizFeedback');
+            
+            // 피드백 숨기기
+            feedbackElement.classList.add('hidden');
+            document.getElementById('nextQuizBtn').style.display = 'none';
+            isQuizAnswered = false;
+            
+            // 질문 표시
+            if (question.type === 'meaning') {
+                questionElement.innerHTML = `
+                    <div>${question.question}</div>
+                    <div class="quiz-word">${question.word}</div>
+                `;
+            } else {
+                questionElement.innerHTML = `
+                    <div>${question.question}</div>
+                    <div style="font-size: 1.3em; color: #4b0082; margin: 15px 0; font-weight: bold;">"${question.meaning}"</div>
+                `;
+            }
+            
+            // 선택지 표시
+            optionsElement.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionButton = document.createElement('button');
+                optionButton.className = 'quiz-option';
+                optionButton.textContent = option;
+                optionButton.onclick = () => selectQuizOption(option, question.correct, optionButton);
+                optionsElement.appendChild(optionButton);
+            });
+            
+            updateQuizProgress();
+        }
+
+        function selectQuizOption(selected, correct, buttonElement) {
+            if (isQuizAnswered) return;
+            
+            isQuizAnswered = true;
+            const allOptions = document.querySelectorAll('.quiz-option');
+            const feedbackElement = document.getElementById('quizFeedback');
+            
+            // 모든 옵션 비활성화
+            allOptions.forEach(option => {
+                option.classList.add('disabled');
+                if (option.textContent === correct) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            if (selected === correct) {
+                correctAnswers++;
+                buttonElement.classList.add('correct');
+                feedbackElement.className = 'quiz-feedback feedback-correct';
+                feedbackElement.innerHTML = `
+                    <div>🎉 정답입니다!</div>
+                    <div style="margin-top: 8px; font-size: 0.9em;">${getWordDetails(correct)}</div>
+                `;
+                createCelebration('✨');
+            } else {
+                wrongAnswers++;
+                buttonElement.classList.add('wrong');
+                feedbackElement.className = 'quiz-feedback feedback-wrong';
+                feedbackElement.innerHTML = `
+                    <div>❌ 틀렸습니다.</div>
+                    <div style="margin-top: 8px; font-size: 0.9em;">정답: <strong>${correct}</strong></div>
+                    <div style="margin-top: 5px; font-size: 0.9em;">${getWordDetails(correct)}</div>
+                `;
+            }
+            
+            feedbackElement.classList.remove('hidden');
+            document.getElementById('nextQuizBtn').style.display = 'block';
+            
+            updateQuizStats();
+        }
+
+        function getWordDetails(answer) {
+            const card = flashcards.find(card => 
+                card.word === answer || card.meaning === answer
+            );
+            
+            if (card) {
+                return `"${card.example}"`;
+            }
+            return '';
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            displayQuizQuestion();
+        }
+
+        function updateQuizProgress() {
+            const progress = ((currentQuizIndex + 1) / quizQuestions.length) * 100;
+            const progressBar = document.getElementById('quizProgressBar');
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = `${currentQuizIndex + 1}/${quizQuestions.length}`;
+            
+            document.getElementById('currentQuizNumber').textContent = currentQuizIndex + 1;
+            
+            const accuracy = Math.round((correctAnswers / Math.max(correctAnswers + wrongAnswers, 1)) * 100);
+            document.getElementById('accuracy').textContent = accuracy;
+        }
+
+        function updateQuizStats() {
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('wrongCount').textContent = wrongAnswers;
+            
+            const score = Math.round((correctAnswers / quizQuestions.length) * 100);
+            document.getElementById('quizScore').textContent = score;
+        }
+
+        function showFinalResult() {
+            document.getElementById('quizMode').classList.add('hidden');
+            document.getElementById('finalResult').classList.remove('hidden');
+            
+            const score = Math.round((correctAnswers / quizQuestions.length) * 100);
+            const finalScoreText = document.getElementById('finalScoreText');
+            const finalMessage = document.getElementById('finalMessage');
+            
+            finalScoreText.textContent = `${correctAnswers}/${quizQuestions.length} 정답 (${score}점)`;
+            
+            if (score >= 90) {
+                finalMessage.textContent = '⚡ 해리포터처럼 뛰어난 마법사입니다! 🪄';
+                createMultipleSparkles();
+            } else if (score >= 70) {
+                finalMessage.textContent = '🦉 헤드위그도 인정할 실력이에요! 📚';
+            } else if (score >= 50) {
+                finalMessage.textContent = '🧙‍♂️ 더 열심히 공부해서 마법사가 되어보세요!';
+            } else {
+                finalMessage.textContent = '📖 다시 학습하고 재도전해보세요!';
+            }
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function backToStudy() {
+            currentMode = 'study';
+            document.getElementById('studyMode').classList.remove('hidden');
+            document.getElementById('quizMode').classList.add('hidden');
+            document.getElementById('finalResult').classList.add('hidden');
+            document.getElementById('modeIndicator').textContent = '📚 학습 모드';
+        }
+
+        // 음성 재생 함수
+        function pronounceWord() {
+            const card = flashcards[currentStudyIndex];
+            
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel(); // 이전 음성 중단
+                
+                const utterance = new SpeechSynthesisUtterance(card.word);
+                utterance.lang = 'en-GB'; // 영국식 영어로 변경
+                utterance.rate = 0.7;
+                utterance.pitch = 1.1; // 여성 음성을 위해 피치 약간 높임
+                
+                const voices = speechSynthesis.getVoices();
+                
+                // 영국 여성 음성 우선 검색
+                let selectedVoice = voices.find(voice => 
+                    voice.lang.includes('en-GB') && 
+                    voice.name.toLowerCase().includes('female')
+                );
+                
+                // 영국 여성 음성이 없으면 영국 음성 중 아무거나
+                if (!selectedVoice) {
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.includes('en-GB') || 
+                        voice.name.toLowerCase().includes('british') ||
+                        voice.name.toLowerCase().includes('uk')
+                    );
+                }
+                
+                // 영국 음성이 아예 없으면 여성 음성 찾기
+                if (!selectedVoice) {
+                    selectedVoice = voices.find(voice => 
+                        voice.lang.startsWith('en') && 
+                        (voice.name.toLowerCase().includes('female') ||
+                         voice.name.toLowerCase().includes('woman') ||
+                         voice.name.toLowerCase().includes('kate') ||
+                         voice.name.toLowerCase().includes('susan') ||
+                         voice.name.toLowerCase().includes('victoria'))
+                    );
+                }
+                
+                // 마지막으로 아무 영어 음성이라도
+                if (!selectedVoice) {
+                    selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+                }
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    console.log('선택된 음성:', selectedVoice.name, selectedVoice.lang);
+                }
+                
+                // 헤르미온느처럼 똑똑하게 발음하도록 설정
+                utterance.volume = 0.9;
+                
+                speechSynthesis.speak(utterance);
+                
+                // 발음 버튼에 피드백 효과
+                const pronounceBtn = document.querySelector('.pronounce-btn');
+                if (pronounceBtn) {
+                    pronounceBtn.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        pronounceBtn.style.transform = 'scale(1)';
+                    }, 150);
+                }
+                
+            } else {
+                alert('🔊 음성 재생이 지원되지 않는 브라우저입니다.');
+            }
+        }
+
+        // 시각 효과 함수들
+        function createSparkles() {
+            const sparkles = ['✨', '⭐', '🌟', '💫', '⚡'];
+            
+            for (let i = 0; i < 3; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'magic-sparkle';
+                sparkle.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 0.5 + 's';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => sparkle.remove(), 2000);
+            }
+        }
+
+        function createCelebration(emoji) {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = emoji;
+            
+            document.body.appendChild(celebration);
+            
+            setTimeout(() => celebration.remove(), 1000);
+        }
+
+        function createMultipleSparkles() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => createSparkles(), i * 200);
+            }
+        }
+
+        // 음성 로드
+        window.addEventListener('load', () => {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices();
+                
+                // iOS Safari에서 음성 로드를 위한 추가 처리
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    speechSynthesis.getVoices();
+                });
+            }
+        });
+
+        // 초기화
+        displayStudyCard();
+    </script>
+</body>
+</html>
